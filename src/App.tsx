@@ -1,54 +1,47 @@
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "motion/react";
 
-// ─── Hooks ──────────────────────────────────────────────────────────────────
+// ─── Animation Presets ──────────────────────────────────────────────────────
 
-function useInView(threshold = 0.1) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setVisible(true);
-          obs.disconnect();
-        }
-      },
-      { threshold }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [threshold]);
+const anim = {
+  fadeUp: {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
+  },
+  fadeUpBlur: {
+    hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
+    visible: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: { duration: 0.8, ease },
+    },
+  },
+  scaleFade: {
+    hidden: { opacity: 0, scale: 0.96, y: 10 },
+    visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.5, ease } },
+  },
+  slideLeft: {
+    hidden: { opacity: 0, x: -16 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease } },
+  },
+  drawLine: {
+    hidden: { scaleY: 0 },
+    visible: { scaleY: 1, transition: { duration: 1.4, ease } },
+  },
+};
 
-  return [ref, visible] as const;
-}
+const stagger = (delay = 0.06) => ({
+  hidden: {},
+  visible: { transition: { staggerChildren: delay } },
+});
+
+const vp = { once: true, margin: "-60px" as const };
 
 // ─── Utility Components ─────────────────────────────────────────────────────
-
-function Reveal({
-  children,
-  delay = 0,
-  className = "",
-}: {
-  children: ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  const [ref, visible] = useInView();
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-500 ease-out ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-      } ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
-    </div>
-  );
-}
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
@@ -321,7 +314,10 @@ function Navbar() {
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <a href="#" className="text-xl font-bold tracking-tight text-fg">
+        <a
+          href="#"
+          className="text-xl font-bold tracking-tight text-fg"
+        >
           Open
           <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
             Mercato
@@ -340,10 +336,12 @@ function Navbar() {
             </a>
           ))}
           <a
-            href="#contact"
+            href="https://www.cal.eu/piotr-chabros"
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-full bg-gradient-to-r from-cyan to-blue px-6 py-2.5 text-sm font-semibold text-dark transition-shadow hover:shadow-lg hover:shadow-cyan/25"
           >
-            Get Started
+            Free Consultation
           </a>
         </div>
 
@@ -371,11 +369,13 @@ function Navbar() {
             </a>
           ))}
           <a
-            href="#contact"
+            href="https://www.cal.eu/piotr-chabros"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setOpen(false)}
             className="mt-4 block rounded-full bg-gradient-to-r from-cyan to-blue py-3 text-center text-sm font-semibold text-dark"
           >
-            Get Started
+            Free Consultation
           </a>
         </div>
       )}
@@ -416,69 +416,83 @@ function Hero() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--color-dark)_70%)]" />
 
       <div className="relative mx-auto max-w-6xl px-6">
-        <Reveal>
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 backdrop-blur-sm">
-            <span className="inline-block size-2 rounded-full bg-cyan animate-pulse" />
-            <span className="text-sm font-medium text-fg-muted">
-              Enterprise CRM & ERP Development
-            </span>
-          </div>
-        </Reveal>
-
-        <Reveal delay={80}>
-          <h1 className="mt-8 max-w-5xl text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            Build Smarter Ecommerce{" "}
-            <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
-              with Custom CRM & ERP
-            </span>
-          </h1>
-        </Reveal>
-
-        <Reveal delay={160}>
-          <p className="mt-8 max-w-xl text-lg leading-relaxed text-fg-muted md:text-xl">
-            We design and develop enterprise-grade CRM and ERP systems tailored
-            for ecommerce — helping you unify operations, delight customers, and
-            scale without limits.
-          </p>
-        </Reveal>
-
-        <Reveal delay={240}>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <a
-              href="#contact"
-              className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-cyan to-blue px-8 py-4 text-base font-semibold text-dark transition-all hover:shadow-xl hover:shadow-cyan/20"
-            >
-              Schedule a Discovery Call
-              <span className="transition-transform group-hover:translate-x-0.5">
-                <IconArrowRight />
+        {/* Hero content with staggered reveal */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger(0.12)}
+        >
+          <motion.div variants={anim.fadeUp}>
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 backdrop-blur-sm">
+              <span className="inline-block size-2 rounded-full bg-cyan animate-pulse" />
+              <span className="text-sm font-medium text-fg-muted">
+                Enterprise CRM & ERP Development
               </span>
-            </a>
-            <a
-              href="#services"
-              className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] px-8 py-4 text-base font-semibold text-fg transition-all hover:border-white/25 hover:bg-white/[0.04]"
-            >
-              Explore Services
-            </a>
-          </div>
-        </Reveal>
+            </div>
+          </motion.div>
+
+          <motion.div variants={anim.fadeUpBlur}>
+            <h1 className="mt-8 max-w-5xl text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+              Build Smarter Ecommerce{" "}
+              <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
+                with Custom CRM & ERP
+              </span>
+            </h1>
+          </motion.div>
+
+          <motion.div variants={anim.fadeUp}>
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-fg-muted md:text-xl">
+              We design and develop enterprise-grade CRM and ERP systems
+              tailored for ecommerce — helping you unify operations, delight
+              customers, and scale without limits.
+            </p>
+          </motion.div>
+
+          <motion.div variants={anim.fadeUp}>
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <a
+                href="https://www.cal.eu/piotr-chabros"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-cyan to-blue px-8 py-4 text-base font-semibold text-dark transition-all hover:shadow-xl hover:shadow-cyan/20"
+              >
+                Schedule a Free Consultation
+                <span className="transition-transform group-hover:translate-x-0.5">
+                  <IconArrowRight />
+                </span>
+              </a>
+              <a
+                href="#services"
+                className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] px-8 py-4 text-base font-semibold text-fg transition-all hover:border-white/25 hover:bg-white/[0.04]"
+              >
+                Explore Services
+              </a>
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* Stats */}
         <div className="mt-28">
           <GradientDivider />
-          <div className="grid grid-cols-2 gap-8 py-12 md:grid-cols-4">
-            {STATS.map((stat, i) => (
-              <Reveal key={stat.label} delay={320 + i * 70}>
-                <div>
-                  <div className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-4xl font-bold text-transparent md:text-5xl">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1.5 text-sm text-fg-muted">
-                    {stat.label}
-                  </div>
+          <motion.div
+            className="grid grid-cols-2 gap-8 py-12 md:grid-cols-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={vp}
+            variants={stagger(0.08)}
+          >
+            {STATS.map((stat) => (
+              <motion.div key={stat.label} variants={anim.fadeUp}>
+                <div className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-4xl font-bold text-transparent md:text-5xl">
+                  {stat.value}
                 </div>
-              </Reveal>
+                <div className="mt-1.5 text-sm text-fg-muted">
+                  {stat.label}
+                </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -490,43 +504,57 @@ function Services() {
     <section id="services" className="relative bg-dark py-28 md:py-36">
       <GradientDivider />
       <div className="mx-auto max-w-6xl px-6 pt-28 md:pt-36">
-        <div className="max-w-2xl">
-          <Reveal>
+        {/* Header */}
+        <motion.div
+          className="max-w-2xl"
+          initial="hidden"
+          whileInView="visible"
+          viewport={vp}
+          variants={stagger(0.08)}
+        >
+          <motion.div variants={anim.slideLeft}>
             <SectionLabel>What We Do</SectionLabel>
-          </Reveal>
-          <Reveal delay={60}>
+          </motion.div>
+          <motion.div variants={anim.fadeUp}>
             <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
               End-to-End CRM & ERP{" "}
               <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
                 Services
               </span>
             </h2>
-          </Reveal>
-          <Reveal delay={120}>
+          </motion.div>
+          <motion.div variants={anim.fadeUp}>
             <p className="mt-5 text-lg leading-relaxed text-fg-muted">
               From custom development to seamless integrations, we build the
               enterprise backbone your ecommerce business needs.
             </p>
-          </Reveal>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Cards grid */}
+        <motion.div
+          className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          initial="hidden"
+          whileInView="visible"
+          viewport={vp}
+          variants={stagger(0.06)}
+        >
           {SERVICES.map((service, i) => (
-            <Reveal key={service.title} delay={i * 60}>
-              <div className="group relative h-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 transition-all duration-300 hover:border-cyan/20 hover:bg-white/[0.04] hover:shadow-[0_0_40px_rgba(34,211,238,0.06)]">
-                <span className="mb-5 inline-flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan/15 to-blue/15 text-sm font-bold text-cyan">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="text-lg font-semibold text-fg">
-                  {service.title}
-                </h3>
-                <p className="mt-2.5 leading-relaxed text-fg-muted">
-                  {service.description}
-                </p>
-              </div>
-            </Reveal>
+            <motion.div
+              key={service.title}
+              variants={anim.scaleFade}
+              className="group relative h-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 transition-[border-color,background-color,box-shadow] duration-300 hover:border-cyan/20 hover:bg-white/[0.04] hover:shadow-[0_0_40px_rgba(34,211,238,0.06)]"
+            >
+              <span className="mb-5 inline-flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan/15 to-blue/15 text-sm font-bold text-cyan">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 className="text-lg font-semibold text-fg">{service.title}</h3>
+              <p className="mt-2.5 leading-relaxed text-fg-muted">
+                {service.description}
+              </p>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -536,49 +564,61 @@ function CapabilitiesSection() {
   return (
     <section id="capabilities" className="relative bg-panel py-28 md:py-36">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="max-w-2xl">
-          <Reveal>
+        {/* Header */}
+        <motion.div
+          className="max-w-2xl"
+          initial="hidden"
+          whileInView="visible"
+          viewport={vp}
+          variants={stagger(0.08)}
+        >
+          <motion.div variants={anim.slideLeft}>
             <SectionLabel>Why Open Mercato</SectionLabel>
-          </Reveal>
-          <Reveal delay={60}>
+          </motion.div>
+          <motion.div variants={anim.fadeUp}>
             <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
               Built for Ecommerce{" "}
               <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
                 at Scale
               </span>
             </h2>
-          </Reveal>
-          <Reveal delay={120}>
+          </motion.div>
+          <motion.div variants={anim.fadeUp}>
             <p className="mt-5 text-lg leading-relaxed text-fg-muted">
               Every solution we build is engineered with the unique demands of
               ecommerce — high throughput, real-time data, and uncompromising
               reliability.
             </p>
-          </Reveal>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="mt-16 grid gap-4 sm:grid-cols-2">
+        {/* Cards */}
+        <motion.div
+          className="mt-16 grid gap-4 sm:grid-cols-2"
+          initial="hidden"
+          whileInView="visible"
+          viewport={vp}
+          variants={stagger(0.08)}
+        >
           {CAPABILITIES.map((cap, i) => (
-            <Reveal key={cap.title} delay={i * 70}>
-              <div className="group relative h-full overflow-hidden rounded-2xl border border-white/[0.06] bg-dark/60 p-10 transition-all duration-300 hover:border-cyan/20 hover:shadow-[0_0_50px_rgba(34,211,238,0.06)]">
-                {/* Background number */}
-                <span className="pointer-events-none absolute -top-2 -right-2 text-[8rem] font-extrabold leading-none text-white/[0.03] transition-colors group-hover:text-cyan/[0.06]">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-
-                {/* Gradient accent line */}
-                <div className="mb-6 h-1 w-10 rounded-full bg-gradient-to-r from-cyan to-blue transition-all duration-300 group-hover:w-16" />
-
-                <h3 className="relative text-xl font-semibold text-fg">
-                  {cap.title}
-                </h3>
-                <p className="relative mt-3 leading-relaxed text-fg-muted">
-                  {cap.description}
-                </p>
-              </div>
-            </Reveal>
+            <motion.div
+              key={cap.title}
+              variants={anim.scaleFade}
+              className="group relative h-full overflow-hidden rounded-2xl border border-white/[0.06] bg-dark/60 p-10 transition-[border-color,box-shadow] duration-300 hover:border-cyan/20 hover:shadow-[0_0_50px_rgba(34,211,238,0.06)]"
+            >
+              <span className="pointer-events-none absolute -top-2 -right-2 text-[8rem] font-extrabold leading-none text-white/[0.03] transition-colors duration-500 group-hover:text-cyan/[0.06]">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="mb-6 h-1 w-10 rounded-full bg-gradient-to-r from-cyan to-blue transition-all duration-500 group-hover:w-16" />
+              <h3 className="relative text-xl font-semibold text-fg">
+                {cap.title}
+              </h3>
+              <p className="relative mt-3 leading-relaxed text-fg-muted">
+                {cap.description}
+              </p>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -589,55 +629,77 @@ function Process() {
     <section id="process" className="relative bg-dark py-28 md:py-36">
       <GradientDivider />
       <div className="mx-auto max-w-6xl px-6 pt-28 md:pt-36">
-        <div className="max-w-2xl">
-          <Reveal>
+        {/* Header */}
+        <motion.div
+          className="max-w-2xl"
+          initial="hidden"
+          whileInView="visible"
+          viewport={vp}
+          variants={stagger(0.08)}
+        >
+          <motion.div variants={anim.slideLeft}>
             <SectionLabel>Our Process</SectionLabel>
-          </Reveal>
-          <Reveal delay={60}>
+          </motion.div>
+          <motion.div variants={anim.fadeUp}>
             <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
               From Vision to{" "}
               <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
                 Production
               </span>
             </h2>
-          </Reveal>
-          <Reveal delay={120}>
+          </motion.div>
+          <motion.div variants={anim.fadeUp}>
             <p className="mt-5 text-lg leading-relaxed text-fg-muted">
               A battle-tested delivery methodology refined across 150+
               ecommerce projects.
             </p>
-          </Reveal>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Timeline */}
         <div className="relative mt-16 pl-8 md:pl-14">
-          {/* Gradient connector line */}
-          <div className="absolute top-2 bottom-2 left-[11px] w-px bg-gradient-to-b from-cyan via-blue to-transparent md:left-[19px]" />
+          {/* Animated gradient connector line */}
+          <motion.div
+            className="absolute top-2 bottom-2 left-[11px] w-px bg-gradient-to-b from-cyan via-blue to-transparent md:left-[19px]"
+            style={{ originY: 0 }}
+            variants={anim.drawLine}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          />
 
-          <div className="space-y-2">
-            {PROCESS_STEPS.map((item, i) => (
-              <Reveal key={item.step} delay={i * 70}>
-                <div className="group relative rounded-2xl border border-transparent p-6 transition-all hover:border-white/[0.06] hover:bg-white/[0.02] md:p-8">
-                  {/* Dot */}
-                  <div className="absolute -left-8 top-8 flex size-6 items-center justify-center rounded-full border-2 border-cyan bg-dark md:-left-14 md:size-10 md:top-10">
-                    <span className="hidden text-xs font-bold text-cyan md:block">
-                      {item.step}
-                    </span>
-                  </div>
-
-                  <span className="text-xs font-bold text-cyan md:hidden">
-                    Step {item.step}
+          <motion.div
+            className="space-y-2"
+            initial="hidden"
+            whileInView="visible"
+            viewport={vp}
+            variants={stagger(0.1)}
+          >
+            {PROCESS_STEPS.map((item) => (
+              <motion.div
+                key={item.step}
+                variants={anim.fadeUp}
+                className="group relative rounded-2xl border border-transparent p-6 transition-[border-color,background-color] duration-300 hover:border-white/[0.06] hover:bg-white/[0.02] md:p-8"
+              >
+                {/* Dot */}
+                <div className="absolute -left-8 top-8 flex size-6 items-center justify-center rounded-full border-2 border-cyan bg-dark md:-left-14 md:top-10 md:size-10">
+                  <span className="hidden text-xs font-bold text-cyan md:block">
+                    {item.step}
                   </span>
-                  <h3 className="mt-1 text-xl font-semibold text-fg md:mt-0">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 max-w-xl leading-relaxed text-fg-muted">
-                    {item.description}
-                  </p>
                 </div>
-              </Reveal>
+
+                <span className="text-xs font-bold text-cyan md:hidden">
+                  Step {item.step}
+                </span>
+                <h3 className="mt-1 text-xl font-semibold text-fg md:mt-0">
+                  {item.title}
+                </h3>
+                <p className="mt-2 max-w-xl leading-relaxed text-fg-muted">
+                  {item.description}
+                </p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -648,58 +710,217 @@ function TechStack() {
   return (
     <section id="stack" className="relative bg-panel py-28 md:py-36">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="max-w-2xl">
-          <Reveal>
+        {/* Header */}
+        <motion.div
+          className="max-w-2xl"
+          initial="hidden"
+          whileInView="visible"
+          viewport={vp}
+          variants={stagger(0.08)}
+        >
+          <motion.div variants={anim.slideLeft}>
             <SectionLabel>Technology Stack</SectionLabel>
-          </Reveal>
-          <Reveal delay={60}>
+          </motion.div>
+          <motion.div variants={anim.fadeUp}>
             <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
               We Speak{" "}
               <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
                 Your Stack
               </span>
             </h2>
-          </Reveal>
-          <Reveal delay={120}>
+          </motion.div>
+          <motion.div variants={anim.fadeUp}>
             <p className="mt-5 text-lg leading-relaxed text-fg-muted">
               Platform-agnostic expertise across the modern ecommerce and
               enterprise ecosystem.
             </p>
-          </Reveal>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="mt-16 space-y-8">
-          {TECH_CATEGORIES.map((cat, i) => (
-            <Reveal key={cat.label} delay={i * 50}>
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-8">
-                <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.15em] text-fg-faint md:w-24">
-                  {cat.label}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {cat.items.map((item) => (
-                    <span
-                      key={item}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-sm text-fg-muted transition-all hover:border-cyan/25 hover:bg-cyan/[0.06] hover:text-fg"
-                    >
-                      <span className="text-cyan">
-                        <IconCheck />
-                      </span>
-                      {item}
+        {/* Tech rows with staggered pills */}
+        <motion.div
+          className="mt-16 space-y-8"
+          initial="hidden"
+          whileInView="visible"
+          viewport={vp}
+          variants={stagger(0.08)}
+        >
+          {TECH_CATEGORIES.map((cat) => (
+            <motion.div
+              key={cat.label}
+              variants={anim.fadeUp}
+              className="flex flex-col gap-3 md:flex-row md:items-center md:gap-8"
+            >
+              <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.15em] text-fg-faint md:w-24">
+                {cat.label}
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {cat.items.map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-sm text-fg-muted transition-all hover:border-cyan/25 hover:bg-cyan/[0.06] hover:text-fg"
+                  >
+                    <span className="text-cyan">
+                      <IconCheck />
                     </span>
-                  ))}
-                </div>
+                    {item}
+                  </span>
+                ))}
               </div>
-            </Reveal>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
 }
 
+const INPUT_CLASS =
+  "w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-fg placeholder:text-fg-faint outline-none transition-all duration-200 focus:border-cyan/40 focus:bg-white/[0.06] focus:ring-1 focus:ring-cyan/20";
+
+function ContactForm() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    company: "",
+    message: "",
+  });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+
+  function update(field: string, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function handleSubmit(e: { preventDefault(): void }) {
+    e.preventDefault();
+    setStatus("sending");
+    // Simulate sending — replace with a real API call
+    setTimeout(() => setStatus("sent"), 1200);
+  }
+
+  if (status === "sent") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease }}
+        className="flex flex-col items-center justify-center rounded-2xl border border-cyan/20 bg-white/[0.03] px-8 py-16 text-center backdrop-blur-sm"
+      >
+        <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan/20 to-blue/20">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="size-7 text-cyan"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m4.5 12.75 6 6 9-13.5"
+            />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-fg">Message Sent</h3>
+        <p className="mt-2 max-w-xs text-sm leading-relaxed text-fg-muted">
+          Thanks for reaching out. We'll get back to you within 24 hours.
+        </p>
+      </motion.div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-fg-muted">
+            Full Name
+          </label>
+          <input
+            id="name"
+            type="text"
+            required
+            placeholder="John Doe"
+            value={form.name}
+            onChange={(e) => update("name", e.target.value)}
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-fg-muted">
+            Work Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            placeholder="john@company.com"
+            value={form.email}
+            onChange={(e) => update("email", e.target.value)}
+            className={INPUT_CLASS}
+          />
+        </div>
+      </div>
+      <div>
+        <label htmlFor="company" className="mb-1.5 block text-sm font-medium text-fg-muted">
+          Company <span className="text-fg-faint">(optional)</span>
+        </label>
+        <input
+          id="company"
+          type="text"
+          placeholder="Acme Inc."
+          value={form.company}
+          onChange={(e) => update("company", e.target.value)}
+          className={INPUT_CLASS}
+        />
+      </div>
+      <div>
+        <label htmlFor="message" className="mb-1.5 block text-sm font-medium text-fg-muted">
+          How can we help?
+        </label>
+        <textarea
+          id="message"
+          required
+          rows={4}
+          placeholder="Tell us about your project, goals, or challenges..."
+          value={form.message}
+          onChange={(e) => update("message", e.target.value)}
+          className={`${INPUT_CLASS} resize-none`}
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={status === "sending"}
+        className="group mt-2 inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-cyan to-blue px-8 py-4 text-base font-semibold text-dark transition-all hover:shadow-xl hover:shadow-cyan/20 disabled:opacity-60"
+      >
+        {status === "sending" ? (
+          <>
+            <svg className="size-5 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Sending...
+          </>
+        ) : (
+          <>
+            Send Message
+            <span className="transition-transform group-hover:translate-x-0.5">
+              <IconArrowRight />
+            </span>
+          </>
+        )}
+      </button>
+    </form>
+  );
+}
+
 function CTA() {
   return (
-    <section id="contact" className="relative overflow-hidden bg-dark py-28 md:py-36">
+    <section
+      id="contact"
+      className="relative overflow-hidden bg-dark py-28 md:py-36"
+    >
       <GradientDivider />
 
       {/* Background glow */}
@@ -717,71 +938,102 @@ function CTA() {
         }}
       />
 
-      <div className="relative mx-auto max-w-4xl px-6 pt-28 text-center md:pt-36">
-        <Reveal>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-            Ready to Transform Your{" "}
-            <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
-              Ecommerce Operations?
-            </span>
-          </h2>
-        </Reveal>
+      <div className="relative mx-auto max-w-6xl px-6 pt-28 md:pt-36">
+        <div className="grid items-start gap-16 lg:grid-cols-2">
+          {/* Left — copy + info cards */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={vp}
+            variants={stagger(0.1)}
+          >
+            <motion.div variants={anim.slideLeft}>
+              <SectionLabel>Get in Touch</SectionLabel>
+            </motion.div>
+            <motion.div variants={anim.fadeUpBlur}>
+              <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+                Ready to Transform Your{" "}
+                <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
+                  Ecommerce Operations?
+                </span>
+              </h2>
+            </motion.div>
+            <motion.div variants={anim.fadeUp}>
+              <p className="mt-5 text-lg leading-relaxed text-fg-muted">
+                Let's discuss how a custom CRM & ERP solution can streamline
+                your processes, boost satisfaction, and accelerate growth.
+              </p>
+            </motion.div>
 
-        <Reveal delay={80}>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-fg-muted">
-            Let's discuss how a custom CRM & ERP solution can streamline your
-            processes, boost satisfaction, and accelerate growth.
-          </p>
-        </Reveal>
-
-        <Reveal delay={160}>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <a
-              href="mailto:hello@tryopenmercato.com"
-              className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-cyan to-blue px-8 py-4 text-base font-semibold text-dark transition-all hover:shadow-xl hover:shadow-cyan/20"
+            <motion.div
+              variants={stagger(0.06)}
+              className="mt-10 space-y-4"
             >
-              Contact Us
-              <span className="transition-transform group-hover:translate-x-0.5">
-                <IconArrowRight />
-              </span>
-            </a>
-            <a
-              href="mailto:hello@tryopenmercato.com?subject=Discovery%20Call%20Request"
-              className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] px-8 py-4 text-base font-semibold text-fg transition-all hover:border-white/25 hover:bg-white/[0.04]"
-            >
-              Schedule a Call
-            </a>
-          </div>
-        </Reveal>
+              {[
+                {
+                  title: "Free Consultation",
+                  desc: "60-minute deep dive into your ecommerce challenges",
+                },
+                {
+                  title: "Custom Proposal",
+                  desc: "Detailed roadmap with timelines and investment options",
+                },
+                {
+                  title: "Quick Start",
+                  desc: "From kickoff to first milestone in just 2 weeks",
+                },
+              ].map((item) => (
+                <motion.div
+                  key={item.title}
+                  variants={anim.fadeUp}
+                  className="flex items-start gap-3"
+                >
+                  <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan/20 to-blue/20 text-cyan">
+                    <IconCheck />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-semibold text-fg">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-fg-muted">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
 
-        <Reveal delay={240}>
-          <div className="mt-16 grid gap-4 sm:grid-cols-3">
-            {[
-              {
-                title: "Free Consultation",
-                desc: "60-minute deep dive into your ecommerce challenges",
-              },
-              {
-                title: "Custom Proposal",
-                desc: "Detailed roadmap with timelines and investment options",
-              },
-              {
-                title: "Quick Start",
-                desc: "From kickoff to first milestone in just 2 weeks",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-sm transition-all hover:border-cyan/15 hover:bg-white/[0.05]"
+            <motion.div variants={anim.fadeUp} className="mt-8 flex flex-col gap-4">
+              <a
+                href="https://www.cal.eu/piotr-chabros"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex w-fit items-center gap-2.5 rounded-full bg-gradient-to-r from-cyan to-blue px-8 py-4 text-base font-semibold text-dark transition-all hover:shadow-xl hover:shadow-cyan/20"
               >
-                <h3 className="font-semibold text-fg">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-fg-muted">
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Reveal>
+                Schedule a Free Consultation
+                <span className="transition-transform group-hover:translate-x-0.5">
+                  <IconArrowRight />
+                </span>
+              </a>
+              <a
+                href="mailto:hello@tryopenmercato.com"
+                className="text-sm font-medium text-fg-muted transition-colors hover:text-cyan"
+              >
+                Or email us directly at{" "}
+                <span className="text-cyan">hello@tryopenmercato.com</span>
+              </a>
+            </motion.div>
+          </motion.div>
+
+          {/* Right — contact form */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={vp}
+            variants={anim.scaleFade}
+            className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 backdrop-blur-sm md:p-10"
+          >
+            <ContactForm />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -791,9 +1043,13 @@ function Footer() {
   return (
     <footer className="border-t border-white/[0.06] bg-dark py-16">
       <div className="mx-auto max-w-6xl px-6">
+        {/* Top row — logo + nav */}
         <div className="flex flex-col items-start justify-between gap-10 md:flex-row md:items-center">
           <div>
-            <a href="#" className="text-xl font-bold tracking-tight text-fg">
+            <a
+              href="#"
+              className="text-xl font-bold tracking-tight text-fg"
+            >
               Open
               <span className="bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
                 Mercato
@@ -817,8 +1073,65 @@ function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/[0.06] pt-8 text-sm text-fg-faint">
-          &copy; {new Date().getFullYear()} Open Mercato. All rights reserved.
+        {/* Company details */}
+        <div className="mt-12 grid gap-8 border-t border-white/[0.06] pt-8 sm:grid-cols-2 md:grid-cols-4">
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-fg-faint">
+              Company
+            </h4>
+            <p className="mt-2 text-sm leading-relaxed text-fg-muted">
+              Bespokesoft Piotr Chabros
+              <br />
+              NIP: PL7010510120
+            </p>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-fg-faint">
+              Address
+            </h4>
+            <p className="mt-2 text-sm leading-relaxed text-fg-muted">
+              Pastewna 27b
+              <br />
+              02-954 Warszawa, Poland
+            </p>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-fg-faint">
+              Phone
+            </h4>
+            <a
+              href="tel:+48667582525"
+              className="mt-2 block text-sm text-fg-muted transition-colors hover:text-cyan"
+            >
+              +48 667 582 525
+            </a>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.15em] text-fg-faint">
+              Email
+            </h4>
+            <a
+              href="mailto:hello@tryopenmercato.com"
+              className="mt-2 block text-sm text-fg-muted transition-colors hover:text-cyan"
+            >
+              hello@tryopenmercato.com
+            </a>
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col items-start justify-between gap-4 border-t border-white/[0.06] pt-8 text-sm text-fg-faint sm:flex-row sm:items-center">
+          <span>
+            &copy; {new Date().getFullYear()} Bespokesoft Piotr Chabros. All
+            rights reserved.
+          </span>
+          <div className="flex gap-6">
+            <Link to="/privacy" className="transition-colors hover:text-fg">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="transition-colors hover:text-fg">
+              Terms of Service
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
