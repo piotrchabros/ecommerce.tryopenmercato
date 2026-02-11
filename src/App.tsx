@@ -785,17 +785,36 @@ function ContactForm() {
     company: "",
     message: "",
   });
-  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  function handleSubmit(e: { preventDefault(): void }) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault();
     setStatus("sending");
-    // Simulate sending — replace with a real API call
-    setTimeout(() => setStatus("sent"), 1200);
+
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: "3276c14d-a128-453a-bfc3-6e4a1f732f22",
+          name: form.name,
+          email: form.email,
+          company: form.company,
+          message: form.message,
+          subject: `New contact from ${form.name}`,
+          from_name: "OpenMercato Contact Form",
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+      setStatus("sent");
+    } catch {
+      setStatus("error");
+    }
   }
 
   if (status === "sent") {
@@ -826,6 +845,33 @@ function ContactForm() {
         <p className="mt-2 max-w-xs text-sm leading-relaxed text-fg-muted">
           Thanks for reaching out. We'll get back to you within 24 hours.
         </p>
+      </motion.div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease }}
+        className="flex flex-col items-center justify-center rounded-2xl border border-red-500/20 bg-white/[0.03] px-8 py-16 text-center backdrop-blur-sm"
+      >
+        <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-red-500/10">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-7 text-red-400">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-fg">Something went wrong</h3>
+        <p className="mt-2 max-w-xs text-sm leading-relaxed text-fg-muted">
+          Please try again or email us directly at hello@tryopenmercato.com
+        </p>
+        <button
+          onClick={() => setStatus("idle")}
+          className="mt-6 rounded-full border border-white/[0.12] px-6 py-2.5 text-sm font-semibold text-fg transition-all hover:border-white/25 hover:bg-white/[0.04]"
+        >
+          Try Again
+        </button>
       </motion.div>
     );
   }
