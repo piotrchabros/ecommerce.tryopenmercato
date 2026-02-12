@@ -702,6 +702,8 @@ function Team() {
               <div className="mb-6 flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-white/[0.08] bg-gradient-to-br from-cyan/10 to-blue/10 transition-all duration-300 group-hover:border-cyan/30 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.1)]">
                 {member.initials === "PC" ? (
                   <img src="/piotr_chabros.png" alt={member.name} className="size-full object-cover" />
+                ) : member.initials === "JT" ? (
+                  <img src="/jacek_tomaszewski.jpeg" alt={member.name} className="size-full object-cover" />
                 ) : (
                   <span className="text-2xl font-bold bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
                     {member.initials}
