@@ -698,11 +698,15 @@ function Team() {
               variants={anim.scaleFade}
               className="group relative flex flex-col items-center rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 text-center transition-[border-color,background-color,box-shadow] duration-300 hover:border-cyan/20 hover:bg-white/[0.04] hover:shadow-[0_0_40px_rgba(34,211,238,0.06)]"
             >
-              {/* Photo placeholder */}
-              <div className="mb-6 flex size-24 items-center justify-center rounded-full border-2 border-white/[0.08] bg-gradient-to-br from-cyan/10 to-blue/10 transition-all duration-300 group-hover:border-cyan/30 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.1)]">
-                <span className="text-2xl font-bold bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
-                  {member.initials}
-                </span>
+              {/* Photo */}
+              <div className="mb-6 flex size-24 items-center justify-center overflow-hidden rounded-full border-2 border-white/[0.08] bg-gradient-to-br from-cyan/10 to-blue/10 transition-all duration-300 group-hover:border-cyan/30 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.1)]">
+                {member.initials === "PC" ? (
+                  <img src="/piotr_chabros.png" alt={member.name} className="size-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-bold bg-gradient-to-r from-cyan to-blue bg-clip-text text-transparent">
+                    {member.initials}
+                  </span>
+                )}
               </div>
 
               <h3 className="text-lg font-semibold text-fg">{member.name}</h3>
