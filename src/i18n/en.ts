@@ -278,6 +278,8 @@ export const en = {
     addressTitle: "Address",
     phoneTitle: "Phone",
     emailTitle: "Email",
+    openSourceNote:
+      "This website is based on the open-source code available at GitHub.",
     copyright: "Bespokesoft Piotr Chabros. All rights reserved.",
     privacyPolicy: "Privacy Policy",
     termsOfService: "Terms of Service",

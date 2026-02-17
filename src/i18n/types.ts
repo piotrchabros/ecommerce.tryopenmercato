@@ -95,6 +95,7 @@ export interface Translations {
     addressTitle: string;
     phoneTitle: string;
     emailTitle: string;
+    openSourceNote: string;
     copyright: string;
     privacyPolicy: string;
     termsOfService: string;

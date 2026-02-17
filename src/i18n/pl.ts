@@ -278,6 +278,8 @@ export const pl = {
     addressTitle: "Adres",
     phoneTitle: "Telefon",
     emailTitle: "Email",
+    openSourceNote:
+      "Ta strona powsta\u0142a na bazie kodu open source dost\u0119pnego w serwisie GitHub.",
     copyright: "Bespokesoft Piotr Chabros. Wszelkie prawa zastrze\u017Cone.",
     privacyPolicy: "Polityka prywatno\u015Bci",
     termsOfService: "Regulamin",

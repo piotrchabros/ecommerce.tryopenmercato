@@ -1106,9 +1106,19 @@ function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col items-start justify-between gap-4 border-t border-white/[0.06] pt-8 text-sm text-fg-faint sm:flex-row sm:items-center">
-          <span>
-            &copy; {new Date().getFullYear()} {t.footer.copyright}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span>
+              &copy; {new Date().getFullYear()} {t.footer.copyright}
+            </span>
+            <a
+              href="https://github.com/open-mercato/open-mercato"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-fg-faint transition-colors hover:text-fg"
+            >
+              {t.footer.openSourceNote}
+            </a>
+          </div>
           <div className="flex gap-6">
             <Link to="/privacy" className="transition-colors hover:text-fg">
               {t.footer.privacyPolicy}
